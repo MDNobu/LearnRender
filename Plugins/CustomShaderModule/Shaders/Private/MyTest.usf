@@ -1,0 +1,18 @@
+#include "/Engine/Public/Platform.ush"
+
+// 简单的直通着色器
+
+void MainVS(
+        in float InPosition : ATTRIBUTE0,
+        out float4 Output : SV_POSITION
+    )
+{
+    Output = InPosition;
+}
+
+// 简单的pixel shader
+float4 MyColor;
+float4 MainPS() : SV_Target0
+{
+    return MyColor;
+}
