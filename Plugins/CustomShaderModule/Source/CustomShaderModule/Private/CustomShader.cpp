@@ -49,6 +49,8 @@ public:
 		FRHIResourceCreateInfo CreateInfo(&Vertices);
 		VertexBufferRHI = RHICreateVertexBuffer(Vertices.GetResourceDataSize(), BUF_Static, CreateInfo);
 	}
+
+
 };
 
 TGlobalResource<FSimpleVertexBuffer> GSimpleVertexBuffer;
