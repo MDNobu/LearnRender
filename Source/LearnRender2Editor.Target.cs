@@ -9,6 +9,6 @@ public class LearnRender2EditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "LearnRender2" } );
+		ExtraModuleNames.AddRange( new string[] { "LearnRender2", "LensDistortion" } );
 	}
 }

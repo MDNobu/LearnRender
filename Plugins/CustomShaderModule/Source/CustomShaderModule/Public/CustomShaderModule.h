@@ -12,4 +12,13 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+	static inline FCustomShaderModuleModule& Get()
+	{
+		return FModuleManager::LoadModuleChecked<FCustomShaderModuleModule>("CustomShaderModule");
+	}
+	static inline bool IsAvailable()
+	{
+		return FModuleManager::Get().IsModuleLoaded("CustomShaderModule");
+	}
 };

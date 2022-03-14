@@ -31,7 +31,7 @@ public class CustomShaderModule : ModuleRules
                 "Renderer",
                 "RenderCore",
                 "RHI",
-                "Projects"
+				"Projects"
             }
 			);
 			
