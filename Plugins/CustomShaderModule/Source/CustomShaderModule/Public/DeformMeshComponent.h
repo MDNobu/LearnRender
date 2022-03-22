@@ -27,7 +27,7 @@ public:
 	bool bSectionVisible;
 
 	FDeformMeshSection()
-		: SectionBoundingBox(ForceInit) //#Unkown 这里是为什么
+		: SectionBoundingBox(ForceInit) // 初始化FBox为无效
 		, bSectionVisible(true)
 	{
 		
@@ -52,7 +52,7 @@ class CUSTOMSHADERMODULE_API UDeformMeshComponent : public UMeshComponent
 public:
 	void CreateSection(int32 SectionIndex, UStaticMesh* SourceMesh, const FTransform& DeformTransform);
 
-	void UpdateSection(int32 SectionIndex, const FTransform& DeformTransform);
+	void UpdateSectionTransform(int32 SectionIndex, const FTransform& DeformTransform);
 
 	void FinishDeformUpdate();
 
@@ -62,6 +62,15 @@ public:
 
 	void SetMeshSectionVisible(int32 SectionIndex, bool bNewVisibility);
 
+
+
+	FPrimitiveSceneProxy* CreateSceneProxy() override;
+
+
+	int32 GetNumMaterials() const override;
+
+
+	FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 
 public:
 

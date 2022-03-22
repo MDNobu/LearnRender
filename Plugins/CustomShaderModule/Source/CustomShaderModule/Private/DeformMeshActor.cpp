@@ -10,6 +10,8 @@ ADeformMeshActor::ADeformMeshActor()
 	DeformMeshComp =  CreateDefaultSubobject< UDeformMeshComponent>(TEXT("DeformComponnet"));
 	DeformController = CreateDefaultSubobject<AActor>(TEXT("DeformController"));
 
+	DeformMeshComp->SetupAttachment(GetRootComponent());
+
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -28,7 +30,7 @@ void ADeformMeshActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	DeformMeshComp->UpdateSection(0, DeformController->GetTransform());
+	DeformMeshComp->UpdateSectionTransform(0, DeformController->GetTransform());
 	DeformMeshComp->FinishDeformUpdate();
 }
 

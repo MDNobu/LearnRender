@@ -148,9 +148,13 @@ void RenderMyTest(FRHICommandListImmediate& InRHICmdList,
 	// Get shaders.
 	//FGlobalShaderMap* GlobalShaderMap = GetGlobalShaderMap(FeatureLevel);  
 	FGlobalShaderMap* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
-	TShaderMapRef< FMyTestVS > VertexShader(GlobalShaderMap);
-	TShaderMapRef< FMyPS > PixelShader(GlobalShaderMap);
+	//TShaderMapRef< FMyTestVS > VertexShader(GlobalShaderMap);
+	//TShaderMapRef< FMyPS > PixelShader(GlobalShaderMap);
 
+	TShaderRef<FMyTestVS> VertexShader = GlobalShaderMap->GetShader<FMyTestVS>();
+	TShaderRef<FMyPS> PixelShader = GlobalShaderMap->GetShader<FMyPS>();
+
+	//VertexShader.GetVertexShader()
 	//UE_LOG(LogTemp, Warning, TEXT("%s content"), *GetName());
 	//GlobalShaderMap->
 
