@@ -17,7 +17,16 @@
 #include "Containers/DynamicRHIResourceArray.h"
 #include "Runtime/RenderCore/Public/PixelShaderUtils.h"
 #include "RHIResources.h"
+#include "ShaderParameters.h"
 
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FMyUniformStruct, )
+SHADER_PARAMETER(FVector4, ColorOne)
+SHADER_PARAMETER(FVector4, ColorTwo)
+SHADER_PARAMETER(FVector4, ColorThree)
+SHADER_PARAMETER(FVector4, ColorFour)
+SHADER_PARAMETER(uint32, ColorIndex)
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FMyUniformStruct, "FMyUniform");
 
 
 IMPLEMENT_SHADER_TYPE(, FMyTestVS, TEXT("/Plugin/CustomShaderModule/Private/MyTest.usf"), TEXT("MainVS"), SF_Vertex);
@@ -79,7 +88,7 @@ public:
 
 };
 
-TGlobalResource<FSimpleVertexBuffer> GSimpleVertexBuffer;
+
 //¶¥µã»º³åÇøÊôÐÔÃèÊö
 class FColorVertexDeclaration : public FRenderResource
 {
@@ -100,6 +109,9 @@ public:
 };
 
 TGlobalResource<FColorVertexDeclaration> GSimpleVertexDeclaration;
+TGlobalResource<FSimpleVertexBuffer> GSimpleVertexBuffer;
+
+
 //Ë÷Òý»º³åÇø
 class FSimpleIndexBuffer : public FIndexBuffer
 {
@@ -162,6 +174,8 @@ TGlobalResource<FSimpleScreenVertexBuffer> GSimpleScreenVertexBuffer;
 //TGlobalResource<FSim
 
 
+
+
 void RenderMyTest(FRHICommandListImmediate& InRHICmdList,
 	FTextureRenderTargetResource* OuttRenderTargetResource, FLinearColor InMyColor)
 {
@@ -198,7 +212,7 @@ void RenderMyTest(FRHICommandListImmediate& InRHICmdList,
 	GraphicsPSOInit.PrimitiveType = PT_TriangleStrip;
 	SetGraphicsPipelineState(InRHICmdList, GraphicsPSOInit);
 
-	PixelShader->SetColor(InRHICmdList, InMyColor, nullptr);
+	PixelShader->SetParameters(InRHICmdList, InMyColor, nullptr, FMyUniformStructData());
 	//SetShaderParameters(RHICmdList, PixelShader, PixelShader.GetPixelShader(), );
 	//SetShaderValue(RHICmdList, )
 
@@ -253,6 +267,7 @@ void RenderMyTest2(FRHICommandListImmediate& RHICmdList,
 	GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
 	GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
 	GraphicsPSOInit.PrimitiveType = PT_TriangleList;
+	//GraphicsPSOInit.PrimitiveType = PT_TriangleStrip;
 	GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GSimpleVertexDeclaration.VertexDeclarationRHI;
 	GraphicsPSOInit.BoundShaderState.VertexShaderRHI = VertexShader.GetVertexShader();
 	GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
@@ -261,7 +276,7 @@ void RenderMyTest2(FRHICommandListImmediate& RHICmdList,
 	//FTextureReference myTexRef = InMyTexture->TextureReference;
 	//FRHITexture2D* myRHITexture = myTexRef.TextureReferenceRHI->GetTexture2D();
 
-	PixelShader->SetColor(RHICmdList, InColor, InRHITexRef);
+	PixelShader->SetParameters(RHICmdList, InColor, InRHITexRef, FMyUniformStructData());
 	//PixelShader->SetParameters(RHICmdList, ,)
 
 	// Update viewport.
@@ -270,7 +285,7 @@ void RenderMyTest2(FRHICommandListImmediate& RHICmdList,
 		OutputRenderTargetResource->GetSizeX(), OutputRenderTargetResource->GetSizeY(), 1.f);
 
 	// Set the vertextBuffer.
-	RHICmdList.SetStreamSource(0, GSimpleVertexBuffer.VertexBufferRHI, 0);
+	RHICmdList.SetStreamSource(0, GSimpleScreenVertexBuffer.VertexBufferRHI, 0);
 
 	RHICmdList.DrawIndexedPrimitive(
 		GSimpleIndexBuffer.IndexBufferRHI,
@@ -346,7 +361,7 @@ void DrawTestShaderRenderTarget_RenderThread2(
 		//PixelShader->SetParameters(RHICmdList, PixelShader.GetPixelShader(), CompiledCameraModel, DisplacementMapResolution);
 		//MyTexture
 
-		PixelShader->SetColor(RHICmdList, MyColor, InRhiTexRef);
+		PixelShader->SetParameters(RHICmdList, MyColor, InRhiTexRef, FMyUniformStructData());
 		//PixelShader
 
 		// Draw
@@ -546,4 +561,47 @@ void UCustomShader_BPL::DrawTestShaderRenderTarget(
 	);
 
 
+}
+
+void FMyPS::SetParameters(FRHICommandList& RHICmdList, const FLinearColor& InColor, FTextureReferenceRHIRef InMyTexture, 
+	const FMyUniformStructData& InShaderStructData)
+{
+	FRHIPixelShader* PS = RHICmdList.GetBoundPixelShader();
+	SetShaderValue(RHICmdList, PS, OutputColor, InColor);
+
+	FRHISamplerState* SamplerStateRHI =
+		TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
+
+	//FRHITexture* myTexture = InMyTexture->TextureReference.TextureReferenceRHI;
+	SetTextureParameter(RHICmdList, PS, TestTexture, TestTextureSampler,
+		SamplerStateRHI, InMyTexture);
+
+	FMyUniformStruct myUniformParam;
+	myUniformParam.ColorOne = InShaderStructData.ColorOne;
+	myUniformParam.ColorTwo = InShaderStructData.ColorTwo;
+	myUniformParam.ColorThree = InShaderStructData.ColorThree;
+	myUniformParam.ColorFour = InShaderStructData.ColorFour;
+	myUniformParam.ColorIndex = InShaderStructData.ColorIndex;
+
+	//RHICmdList.GetBoundPixelShader()
+	//FRHIShader
+	//PS.AddRef()
+	FPixelShaderRHIRef psRef(PS);
+	const TShaderUniformBufferParameter<FMyUniformStructData>& uniformParamRef =
+		GetUniformBufferParameter<FMyUniformStructData>();
+	//TShaderUniformBufferParameter<FMyUniformStructData>& Parameter,
+	SetUniformBufferParameterImmediate(RHICmdList, RHICmdList.GetBoundPixelShader(),
+		uniformParamRef, myUniformParam);
+
+	// This will trigger if the parameter was not serialized
+	checkSlow(uniformParamRef.IsInitialized());
+	if (uniformParamRef.IsBound())
+	{
+		RHICmdList.SetShaderUniformBuffer(
+			PS,
+			uniformParamRef.GetBaseIndex(),
+			RHICreateUniformBuffer(&myUniformParam, 
+				FMyUniformStructData::StaticStructMetadata.GetLayout(), UniformBuffer_SingleDraw)
+		);
+	}
 }

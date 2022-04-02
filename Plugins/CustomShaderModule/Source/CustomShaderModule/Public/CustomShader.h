@@ -6,7 +6,27 @@
 #include "GlobalShader.h"
 #include "CustomShader.generated.h"
 
+#pragma region DefineUniformBuffers
 
+
+
+USTRUCT(BlueprintType)
+struct FMyUniformStructData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Test")
+		FLinearColor ColorOne;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Test")
+		FLinearColor ColorTwo;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Test")
+		FLinearColor ColorThree;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Test")
+		FLinearColor ColorFour;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Test")
+	int32 ColorIndex;
+};
+#pragma endregion
 
 class FMyTestVS : public FGlobalShader
 {
@@ -76,19 +96,8 @@ public:
 		OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
 	}
 
-	void SetColor(FRHICommandList& RHICmdList, const FLinearColor& InColor, 
-		FTextureReferenceRHIRef InMyTexture)
-	{
-		FRHIPixelShader* PS = RHICmdList.GetBoundPixelShader();
-		SetShaderValue(RHICmdList, PS, OutputColor, InColor);
-		
-		FRHISamplerState* SamplerStateRHI =
-			TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
-
-		//FRHITexture* myTexture = InMyTexture->TextureReference.TextureReferenceRHI;
-		SetTextureParameter(RHICmdList, PS, TestTexture, TestTextureSampler, 
-			SamplerStateRHI, InMyTexture);
-	}
+	void SetParameters(FRHICommandList& RHICmdList, const FLinearColor& InColor, 
+		FTextureReferenceRHIRef InMyTexture, const FMyUniformStructData& InShaderStructData);
 
 private:
 	// 定义pixel shader输出的颜色
@@ -97,6 +106,9 @@ private:
 	LAYOUT_FIELD(FShaderResourceParameter, TestTexture);
 	LAYOUT_FIELD(FShaderResourceParameter, TestTextureSampler);
 };
+
+
+
 
 UCLASS(MinimalAPI)
 class UCustomShader_BPL : public UBlueprintFunctionLibrary
