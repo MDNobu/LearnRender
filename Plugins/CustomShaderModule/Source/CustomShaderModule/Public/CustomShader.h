@@ -60,6 +60,8 @@ public:
 	{
 		OutputColor.Bind(Initializer.ParameterMap, TEXT("MyColor"));
 		//OutputColor.Bind(Initializer.ParameterMap, TEXT("MyColor"));
+		TestTexture.Bind(Initializer.ParameterMap, TEXT("MyTexture"));
+		TestTextureSampler.Bind(Initializer.ParameterMap, TEXT("MyTextureSampler"));
 	}
 
 	static bool ShouldCompilePermutation(const FShaderPermutationParameters& Parameters)
@@ -74,17 +76,26 @@ public:
 		OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
 	}
 
-	void SetColor(FRHICommandList& RHICmdList, const FLinearColor& InColor)
+	void SetColor(FRHICommandList& RHICmdList, const FLinearColor& InColor, 
+		FTextureReferenceRHIRef InMyTexture)
 	{
 		FRHIPixelShader* PS = RHICmdList.GetBoundPixelShader();
 		SetShaderValue(RHICmdList, PS, OutputColor, InColor);
+		
+		FRHISamplerState* SamplerStateRHI =
+			TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
+
+		//FRHITexture* myTexture = InMyTexture->TextureReference.TextureReferenceRHI;
+		SetTextureParameter(RHICmdList, PS, TestTexture, TestTextureSampler, 
+			SamplerStateRHI, InMyTexture);
 	}
 
 private:
 	// 定义pixel shader输出的颜色
 	LAYOUT_FIELD(FShaderParameter, OutputColor);
 
-
+	LAYOUT_FIELD(FShaderResourceParameter, TestTexture);
+	LAYOUT_FIELD(FShaderResourceParameter, TestTextureSampler);
 };
 
 UCLASS(MinimalAPI)
@@ -96,6 +107,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CustomShader", meta = (WorldContext = "WorldContextObject"))
 	static void DrawTestShaderRenderTarget(class UTextureRenderTarget2D* OutputRenderTarget,
-		AActor* Ac, FLinearColor Color);
+		AActor* Ac, FLinearColor Color, UTexture2D* MyTexture);
 };
 //void RenderMyTest2(FRHICommandListImmediate& RHICmdList, FTextureRenderTargetResource* OutputRenderTargetResource);
